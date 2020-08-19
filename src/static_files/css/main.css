@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:100,200,300,400,500,700');
+
+html, body {
+	height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+}
+
+#wrap {
+	min-height: 75%;
+}
+
+#main {
+	overflow:auto;
+	padding-bottom:80px; /* this needs to be bigger than footer height*/
+}
+
+.footer {
+	position: relative;
+	margin-top: -80px; /* negative value of footer height */
+	height: 80px;
+	clear:both;
+	padding-top:20px;
+}
+
+.dropdown .dropdown-menu a:hover {
+	background-color: #dcdce1;
+color: #000;
+}
+
+.footer-custom {
+	background-color: #dcdce1;
+	padding: 60px 40px;
+	width: 100vw !important;
+	margin-left: calc(-50vw + 50%);
+	color: #000;
+}
+
+a.dropdown-item.active {
+	background-color:#D9CDCA;
+color: #000;
+}
+
+.anchor-black {
+	text-decoration: none;
+	color: black;
+}
+
+.heading {
+	text-align: center;
+	margin-top: 1.5rem;
+}
+
+.btn-hover {
+	background-color: #dcdce1;
+	color: #000;
+}
+
+.news-badge {
+	font-size: medium;
+}
