@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 
 from market.models import Company, CompanyCMPRecord
 
-
+#This is a test comment
 class StocksDatabase(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     pointer = models.IntegerField(default=0)
