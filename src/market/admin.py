@@ -1,8 +1,16 @@
 from django.contrib import admin
-from .models import Company, InvestmentRecord, CompanyCMPRecord, Transaction, News, UserNews, TransactionScheduler
+from .models import Company, InvestmentRecord, CompanyCMPRecord, Transaction, News, UserNews, TransactionScheduler, Buybook, Sellbook, Buystage, Sellstage
 
 
-admin.site.register(Company)
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'cmp', 'mkt_qty', 'cap')
+    search_fields = ('code', 'name')
+    ordering = ('id', 'name')
+
+    class Meta:
+        model = Company
+
+admin.site.register(Company, CompanyAdmin)
 
 
 class InvestmentRecordAdmin(admin.ModelAdmin):
@@ -37,6 +45,49 @@ class TransactionAdmin(admin.ModelAdmin):
 
 admin.site.register(Transaction, TransactionAdmin)
 
+# Registering Buybook, Sellbook, Buystage, Sellstage - Pranay
+
+class BuybookAdmin(admin.ModelAdmin):
+    list_display = ('user', 'company', 'num_stocks', 'timestamp')
+    search_fields = ['user', 'company']
+    ordering = ('user', 'company', 'timestamp')
+
+    class Meta:
+        model = Transaction
+
+admin.site.register(Buybook, BuybookAdmin)
+
+class SellbookAdmin(admin.ModelAdmin):
+    list_display = ('user', 'company', 'num_stocks', 'timestamp')
+    search_fields = ['user', 'company']
+    ordering = ('user', 'company', 'timestamp')
+
+    class Meta:
+        model = Transaction
+
+admin.site.register(Sellbook, SellbookAdmin)
+
+class BuystageAdmin(admin.ModelAdmin):
+    list_display = ('user', 'company', 'num_stocks', 'timestamp')
+    search_fields = ['user', 'company']
+    ordering = ('user', 'company', 'timestamp')
+
+    class Meta:
+        model = Transaction
+
+admin.site.register(Buystage, BuystageAdmin)
+
+class SellstageAdmin(admin.ModelAdmin):
+    list_display = ('user', 'company', 'num_stocks', 'timestamp')
+    search_fields = ['user', 'company']
+    ordering = ('user', 'company', 'timestamp')
+
+    class Meta:
+        model = Transaction
+
+admin.site.register(Sellstage, SellstageAdmin)
+
+# /Pranay
 
 class NewsAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_active')

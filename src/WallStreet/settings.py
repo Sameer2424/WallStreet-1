@@ -40,6 +40,7 @@ STOP_TIME = datetime(2022, 5, 5, 2, 00, 0)
 # Application definition
 
 INSTALLED_APPS = [
+    'orders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -98,8 +99,11 @@ WSGI_APPLICATION = 'WallStreet.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'wallstreet',
+        'USER': 'postgres',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost'
     }
 }
 

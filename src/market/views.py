@@ -16,7 +16,7 @@ from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import Company, InvestmentRecord, Transaction, CompanyCMPRecord, News, UserNews, TransactionScheduler
+from .models import Company, InvestmentRecord, Transaction, CompanyCMPRecord, News, UserNews, TransactionScheduler, Buybook, Sellbook
 from .forms import CompanyChangeForm
 from WallStreet.mixins import LoginRequiredMixin, AdminRequiredMixin, CountNewsMixin
 from stocks.models import StocksDatabasePointer
@@ -118,26 +118,27 @@ class CompanyTransactionView(LoginRequiredMixin, CountNewsMixin, View):
                     if purchase_mode == 'buy':
                         purchase_amount = Decimal(quantity)*price
                         if user.cash >= purchase_amount:
-                            _ = Transaction.objects.create(
+                            # Creating a buybook object instead of a Transaction object
+                            _ = Buybook.objects.create( #_ = Transaction.objects.create(
                                 user=user,
                                 company=company,
-                                num_stocks=quantity,
-                                price=price,
-                                mode=purchase_mode,
-                                user_net_worth=InvestmentRecord.objects.calculate_net_worth(user)
+                                num_stocks=quantity
+                                #price=price,
+                                #mode=purchase_mode,
+                                #user_net_worth=InvestmentRecord.objects.calculate_net_worth(user)
                             )
                             messages.success(request, 'Transaction Complete!')
                         else:
                             messages.error(request, 'You have Insufficient Balance for this transaction!')
                     elif purchase_mode == 'sell':
                         if quantity <= investment_obj.stocks:
-                            _ = Transaction.objects.create(
+                            _ = Sellbook.objects.create( #_ = Transaction.objects.create(
                                 user=user,
                                 company=company,
                                 num_stocks=quantity,
-                                price=price,
-                                mode=purchase_mode,
-                                user_net_worth=InvestmentRecord.objects.calculate_net_worth(user)
+                                price=price
+                                #mode=purchase_mode,
+                                #user_net_worth=InvestmentRecord.objects.calculate_net_worth(user)
                             )
                             messages.success(request, 'Transaction Complete!')
                         else:
