@@ -230,6 +230,29 @@ class Sellstage(models.Model):
             user=self.user.username, company=self.company.name
         )
 
+# Table to hold cancelled orders
+class CancelledOrders(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    num_stocks = models.IntegerField(default=0)
+    # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
+    # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    # User net worth also cannot be bundled with an order. 
+    # We need the number of credits available with a user, which can be fetched from the User table.
+    # user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length = 20, default = 'CANCELLED')
+
+    objects = TransactionManager()
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return '{user} - {company}'.format(
+            user=self.user.username, company=self.company.name
+        )
 
 
 def pre_save_transaction_receiver(sender, instance, *args, **kwargs):
