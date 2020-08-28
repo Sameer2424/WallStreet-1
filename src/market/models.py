@@ -19,7 +19,6 @@ CAP_TYPES = (
     ('large', 'Large Cap'),
 )
 
-
 class Company(models.Model):
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=50, unique=True)
@@ -53,7 +52,7 @@ class Company(models.Model):
     def get_absolute_url(self):
         return reverse('market:transaction',kwargs={'code':self.code})
 
-    def user_buy_stocks(self, quantity):
+    '''def user_buy_stocks(self, quantity):
         self.stocks_bought += quantity
         self.save()
 
@@ -71,7 +70,7 @@ class Company(models.Model):
     def update_cmp(self, new_price):
         self.calculate_change(new_price)
         self.cmp = new_price
-        self.save()
+        self.save()'''
 
 
 def post_save_company_receiver(sender, instance, created, *args, **kwargs):
@@ -112,16 +111,20 @@ class TransactionManager(models.Manager):
     def get_by_user_and_company(self, user, company):
         return self.get_queryset().get_by_user_and_company(user=user, company=company)
 
-
+# We can collect all orders here and segregate them into buystage and sellstage from here
+# To make this table as light as possible, we need to get rid of unwanted fields
+# Price and user net worth can be get rid of, we'll calculate those in the stored proc
+# Introducing status field here for order status
 class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
-    price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    #price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     mode = models.CharField(max_length=10, choices=TRANSACTION_MODES)
-    user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    #user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length = 20, default = 'OPEN')
 
     objects = TransactionManager()
 
@@ -136,6 +139,7 @@ class Transaction(models.Model):
 # Making separate buy and sell transaction tables - Pranay
 # For buy orders
 class Buybook(models.Model):
+    #order_id = models.IntegerField(default = 0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
@@ -160,6 +164,7 @@ class Buybook(models.Model):
 
 # For sell orders
 class Sellbook(models.Model):
+    #order_id = models.IntegerField(default = 0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
@@ -184,9 +189,11 @@ class Sellbook(models.Model):
 
 # Staging table for buy orders
 class Buystage(models.Model):
+    order_id = models.IntegerField(default = 0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
+    bought = models.IntegerField(default=0)
     # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
     # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     # User net worth also cannot be bundled with an order. 
@@ -208,9 +215,11 @@ class Buystage(models.Model):
 
 # Staging table for sell orders
 class Sellstage(models.Model):
+    order_id = models.IntegerField(default = 0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
+    sold = models.IntegerField(default=0)
     # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
     # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     # User net worth also cannot be bundled with an order. 
@@ -232,9 +241,11 @@ class Sellstage(models.Model):
 
 # Table to hold cancelled orders
 class CancelledOrders(models.Model):
+    order_id = models.IntegerField(default = 0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
+    mode = models.CharField(max_length=10, choices=TRANSACTION_MODES, default = 'BUY')
     # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
     # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     # User net worth also cannot be bundled with an order. 
@@ -243,6 +254,33 @@ class CancelledOrders(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length = 20, default = 'CANCELLED')
+    reason = models.CharField(max_length=50, default = 'Default')
+
+    objects = TransactionManager()
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return '{user} - {company}'.format(
+            user=self.user.username, company=self.company.name
+        )
+
+# Table to hold completed orders
+class CompletedOrders(models.Model):
+    order_id = models.IntegerField(default = 0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    num_stocks = models.IntegerField(default=0)
+    mode = models.CharField(max_length=10, choices=TRANSACTION_MODES, default = 'BUY')
+    # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
+    # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    # User net worth also cannot be bundled with an order. 
+    # We need the number of credits available with a user, which can be fetched from the User table.
+    # user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length = 20, default = 'COMPLETED')
 
     objects = TransactionManager()
 
@@ -482,4 +520,19 @@ class UserNews(models.Model):
     def __str__(self):
         return self.news.title + ' - ' + self.user.username
 
-# Order Models added - Pranay
+
+
+# Statistics table
+class PlayerData(models.Model):
+    name
+    
+
+    objects = TransactionManager()
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return '{user} - {company}'.format(
+            user=self.user.username, company=self.company.name
+        )

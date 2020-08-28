@@ -3,7 +3,7 @@ from .models import Company, InvestmentRecord, CompanyCMPRecord, Transaction, Ne
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'cmp', 'mkt_qty', 'cap')
+    list_display = ('id', 'name', 'code', 'cmp', 'mkt_qty', 'cap')
     search_fields = ('code', 'name')
     ordering = ('id', 'name')
 
