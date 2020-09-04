@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Company, InvestmentRecord, CompanyCMPRecord, Transaction, News, UserNews, TransactionScheduler, Buybook, Sellbook, Buystage, Sellstage
+from .models import Company, InvestmentRecord, CompanyCMPRecord, Transaction, News, UserNews, TransactionScheduler, Buybook, Sellbook, Buystage, Sellstage, PlayerStats, PlayerValuations, Match
 
 
 class CompanyAdmin(admin.ModelAdmin):
@@ -86,6 +86,10 @@ class SellstageAdmin(admin.ModelAdmin):
         model = Transaction
 
 admin.site.register(Sellstage, SellstageAdmin)
+
+admin.site.register(PlayerStats)
+admin.site.register(PlayerValuations)
+admin.site.register(Match)
 
 # /Pranay
 

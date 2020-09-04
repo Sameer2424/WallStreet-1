@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.urls import path
 from .views import (
     MarketOverview,
     CompanyTransactionView,
@@ -8,10 +9,13 @@ from .views import (
     UpdateMarketView
 )
 
+from . import views
+
 app_name = 'Market'
 
 
 urlpatterns = [
+    path("executetrades", views.executetrades, name = "executetrades"),
     url(r'^overview/$', MarketOverview.as_view(), name='overview'),
     url(r'^transact/(?P<code>\w+)$', CompanyTransactionView.as_view(), name='transaction'),
     url(r'^admin/(?P<code>\w+)$', CompanyAdminCompanyUpdateView.as_view(), name='admin'),

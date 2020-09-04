@@ -119,9 +119,9 @@ class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
-    #price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00) #To be removed
     mode = models.CharField(max_length=10, choices=TRANSACTION_MODES)
-    #user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00) #To be removed
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length = 20, default = 'OPEN')
@@ -522,17 +522,95 @@ class UserNews(models.Model):
 
 
 
-# Statistics table
-class PlayerData(models.Model):
-    name
-    
+#Statistics table
+class PlayerValuations(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
+    team = models.CharField(max_length=50, default='NA')
+    valuation = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
-    objects = TransactionManager()
+class PlayerStats(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
+    full_name = models.CharField(max_length=200, default='NA')
+    dob = models.CharField(max_length=50, default='NA')
+    pob = models.CharField(max_length=50, default='NA')
+    playing_role = models.CharField(max_length=50, default='NA')
+    batting_style = models.CharField(max_length=50, default='NA')
+    bowling_style = models.CharField(max_length=50, default='NA')
+    team = models.CharField(max_length=50, default='NA')
+    matches = models.IntegerField(default=0)
+    batting_innings = models.IntegerField(default=0)
+    notouts = models.IntegerField(default=0)
+    runs = models.IntegerField(default=0)
+    highest = models.CharField(max_length = 10, default='0')
+    batting_average = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    balls_faced = models.IntegerField(default=0)
+    batting_sr = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    hundreds = models.IntegerField(default=0)
+    fifties = models.IntegerField(default=0)
+    fours = models.IntegerField(default=0)
+    sixes = models.IntegerField(default=0)
+    catches = models.IntegerField(default=0)
+    stumpings = models.IntegerField(default=0)
+    bowling_innings = models.IntegerField(default=0)
+    balls_bowled = models.IntegerField(default=0)
+    runs_conceded = models.IntegerField(default=0)
+    wickets = models.IntegerField(default=0)
+    bbi = models.CharField(max_length = 10, default='0')
+    bbm = models.CharField(max_length = 10, default='0')
+    bowling_average = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    economy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    bowling_sr = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    fourfers = models.IntegerField(default=0)
+    fifers = models.IntegerField(default=0)
+    tenfers = models.IntegerField(default=0)
+    #age = models.CharField(max_length=50, default='NA')
 
-    class Meta:
-        ordering = ['-timestamp']
+# This table will store data for the last 'n' matches for every player
+class CurrentForm(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
+    team = models.CharField(max_length=50, default='NA')
+    matches = models.IntegerField(default=0)
+    runs = models.IntegerField(default=0)
+    balls_faced = models.IntegerField(default=0)
+    fours = models.IntegerField(default=0)
+    sixes = models.IntegerField(default=0)
+    catches = models.IntegerField(default=0)
+    stumpings = models.IntegerField(default=0)
+    balls_bowled = models.IntegerField(default=0)
+    runs_conceded = models.IntegerField(default=0)
+    wickets = models.IntegerField(default=0)
+    last_match_pushed = models.IntegerField(default=0)
 
-    def __str__(self):
-        return '{user} - {company}'.format(
-            user=self.user.username, company=self.company.name
-        )
+class Match(models.Model):
+    id = models.IntegerField(primary_key=True)
+    counter = models.IntegerField(default=0)
+    name = models.CharField(max_length=50, unique=True)
+    team = models.CharField(max_length=50, default='NA')
+    runs = models.IntegerField(default=0)
+    balls_faced = models.IntegerField(default=0)
+    fours = models.IntegerField(default=0)
+    sixes = models.IntegerField(default=0)
+    catches = models.IntegerField(default=0)
+    stumpings = models.IntegerField(default=0)
+    balls_bowled = models.IntegerField(default=0)
+    runs_conceded = models.IntegerField(default=0)
+    wickets = models.IntegerField(default=0)
+
+extra_types = ((0, 'none'),(1, 'wides'),(2,'no-ball'),(3,'byes'),(4,'legbyes'))
+dismissal_types = ((0,'none'),(1, 'caught'),(2,'bowled'),(3,'lbw'),(4,'runout'),(5,'retired hurt'))
+
+""" class ScoreCard(models.Model):
+    id = models.IntegerField(primary_key=True)
+    batting_team = models.CharField(max_length=50, default='NA')
+    bowling_team = models.CharField(max_length=50, default='NA')
+    batsman = models.CharField(max_length=50, default='NA')
+    nonstriker = models.CharField(max_length=50, default='NA')
+    bowler = models.CharField(max_length=50, default='NA')
+    runs_batsman = models.IntegerField(default=0)
+    runs_extras = models.IntegerField(default=0)
+    extra_type = models.CharField(choices=extra_types, default='NONE', max_length=20)
+    dismissal_type = models.CharField(choices=dismissal_types, default='NONE', max_length=20)
+    dismissed_batsman = models.CharField(max_length=50, default='NA') """

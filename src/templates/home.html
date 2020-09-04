@@ -27,6 +27,12 @@
             <a class="btn btn-outline-light market-button mt-5" href="{% url 'market:overview' %}">
                 Enter Market
             </a>
+
+            <!--Adding a button to execute trades-->
+            <form action= 'market\executetrades'>
+                <button type="submit" class="btn btn-success mt-3">Execute Trades</button>
+            </form>
+
             </div>
         </div>
         </div>

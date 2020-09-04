@@ -21,6 +21,12 @@ from .forms import CompanyChangeForm
 from WallStreet.mixins import LoginRequiredMixin, AdminRequiredMixin, CountNewsMixin
 from stocks.models import StocksDatabasePointer
 
+import psycopg2
+
+#For Player Data parsing
+import requests
+from bs4 import BeautifulSoup
+import dateparser
 
 User = get_user_model()
 
@@ -37,7 +43,6 @@ def deduct_tax(request):
             user.save()
         return HttpResponse('success')
     return redirect('/')
-
 
 class UpdateMarketView(LoginRequiredMixin, AdminRequiredMixin, View):
 
@@ -217,3 +222,14 @@ class NewsView(LoginRequiredMixin, CountNewsMixin, View):
         UserNews.objects.get_by_user(request.user).update(read=True)
         queryset = News.objects.filter(is_active=True)
         return render(request, 'market/news.html', {'object_list': queryset})
+
+def executetrades(request):
+    sql = 'call execute_trades();'
+    conn = psycopg2.connect(database="wallstreet", user="postgres", password="admin", host="localhost", port="5432")
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("Check if this is getting printed")
+    return HttpResponse(status=200)
