@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block base_head %}
+<title>Trial page</title>
+{% endblock %}
+
+
+{% block content %}
+
+<p>
+    <form action='' method='POST'>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="Submit" name="submit" value="Submit"/>
+    </form>
+</p>
+
+{% endblock %}
