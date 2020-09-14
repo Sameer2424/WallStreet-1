@@ -36,7 +36,7 @@ admin.site.register(CompanyCMPRecord, CompanyCMPRecordAdmin)
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'company', 'num_stocks', 'price', 'mode', 'timestamp')
+    list_display = ('user', 'company', 'num_stocks', 'mode', 'timestamp')
     search_fields = ['user', 'company']
     ordering = ('user', 'company', 'mode', 'timestamp')
 

@@ -73,9 +73,9 @@ class Company(models.Model):
         self.save()'''
 
 
-def post_save_company_receiver(sender, instance, created, *args, **kwargs):
+def post_save_company_receiver(sender, instance, created, *args, **kwargs): # I suspect this is the function creating the Investment Record object upon page visiting.
     if created:
-        # Create Investment Records of the company with each existing user
+    # Create Investment Records of the company with each existing user
         user_qs = User.objects.all()
         for user in user_qs:
             obj, create= InvestmentRecord.objects.get_or_create(user=user, company=instance)
@@ -119,9 +119,9 @@ class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
-    price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00) #To be removed
+    orderprice = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     mode = models.CharField(max_length=10, choices=TRANSACTION_MODES)
-    user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00) #To be removed
+    #user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00) #To be removed
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length = 20, default = 'OPEN')
@@ -194,8 +194,7 @@ class Buystage(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
     bought = models.IntegerField(default=0)
-    # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
-    # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    orderprice = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     # User net worth also cannot be bundled with an order. 
     # We need the number of credits available with a user, which can be fetched from the User table.
     # user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
@@ -220,8 +219,7 @@ class Sellstage(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
-    # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
-    # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    orderprice = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     # User net worth also cannot be bundled with an order. 
     # We need the number of credits available with a user, which can be fetched from the User table.
     # user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
@@ -246,8 +244,7 @@ class CancelledOrders(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
     mode = models.CharField(max_length=10, choices=TRANSACTION_MODES, default = 'BUY')
-    # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
-    # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    orderprice = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     # User net worth also cannot be bundled with an order. 
     # We need the number of credits available with a user, which can be fetched from the User table.
     # user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
@@ -273,8 +270,8 @@ class CompletedOrders(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     num_stocks = models.IntegerField(default=0)
     mode = models.CharField(max_length=10, choices=TRANSACTION_MODES, default = 'BUY')
-    # We cannot have a static price in order tables. It needs to be fetched from the Company table runtime
-    # price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    orderprice = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    executionprice = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     # User net worth also cannot be bundled with an order. 
     # We need the number of credits available with a user, which can be fetched from the User table.
     # user_net_worth = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
@@ -294,37 +291,42 @@ class CompletedOrders(models.Model):
 
 
 def pre_save_transaction_receiver(sender, instance, *args, **kwargs):
-    amount = InvestmentRecord.objects.calculate_net_worth(instance.user)
-    instance.user_net_worth = amount
+    pass
+    #amount = InvestmentRecord.objects.calculate_net_worth(instance.user)
+    #instance.user_net_worth = amount
 
-    investment_obj , obj_created = InvestmentRecord.objects.get_or_create(
-        user=instance.user,
-        company=instance.company
-    )
+    #investment_obj , obj_created = InvestmentRecord.objects.get_or_create(
+    
+    #    user=instance.user,
+    #    company=instance.company
+    #)
 
-    if instance.mode == 'buy':
-        instance.user.buy_stocks(instance.num_stocks, instance.price)
-        instance.company.user_buy_stocks(instance.num_stocks)
-        investment_obj.add_stocks(instance.num_stocks)
-    elif instance.mode == 'sell':
-        instance.user.sell_stocks(instance.num_stocks, instance.price)
-        instance.company.user_sell_stocks(instance.num_stocks)
-        investment_obj.reduce_stocks(instance.num_stocks)
+    # if instance.mode.lower() == 'buy':
+        #pass
+        #instance.user.buy_stocks(instance.num_stocks, instance.price)
+        #instance.company.user_buy_stocks(instance.num_stocks)
+        #investment_obj.add_stocks_to_buy_escrow(instance.num_stocks) # New method added to add the order quantity to escrow - but this executes even if there is an error.
+    # elif instance.mode.lower() == 'sell':
+        #pass
+        #instance.user.sell_stocks(instance.num_stocks, instance.price)
+        #instance.company.user_sell_stocks(instance.num_stocks)
+        #investment_obj.reduce_stocks(instance.num_stocks)
+        #investment_obj.add_stocks_to_sell_escrow(instance.num_stocks) # New method added to add the order quantity to escrow - but this executes even if there is an error.
 
 
-pre_save.connect(pre_save_transaction_receiver, sender=Transaction)
+#pre_save.connect(pre_save_transaction_receiver, sender=Transaction)
 
 
-def post_save_transaction_create_receiver(sender, instance, created, *args, **kwargs):
+'''def post_save_transaction_create_receiver(sender, instance, created, *args, **kwargs):
     if created:
         net_worth_list = [
             instance.user_net_worth for transaction in Transaction.objects.get_by_user(instance.user)
         ]
 
-        instance.user.update_cv(net_worth_list)
+        instance.user.update_cv(net_worth_list)'''
 
 
-post_save.connect(post_save_transaction_create_receiver, sender=Transaction)
+#post_save.connect(post_save_transaction_create_receiver, sender=Transaction)
 
 
 class TransactionSchedulerQueryset(models.query.QuerySet):
@@ -424,6 +426,8 @@ class InvestmentRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     stocks = models.IntegerField(default=0)
+    buy_escrow = models.IntegerField(default=0)
+    sell_escrow = models.IntegerField(default=0)
     updated = models.DateTimeField(auto_now=True)
 
     objects = InvestmentRecordManager()
@@ -437,6 +441,14 @@ class InvestmentRecord(models.Model):
     def add_stocks(self, num_stocks):
         self.stocks += num_stocks
         self.save()
+    
+    def add_stocks_to_buy_escrow(self, num_stocks):
+        self.buy_escrow += num_stocks
+        self.save()
+    
+    def add_stocks_to_sell_escrow(self, num_stocks):
+        self.sell_escrow += num_stocks
+        self.save()
 
     def reduce_stocks(self, num_stocks):
         if self.stocks >= num_stocks:
@@ -445,11 +457,13 @@ class InvestmentRecord(models.Model):
 
 
 def post_save_user_investment_create_receiver(sender, instance, created, *args, **kwargs):
+    pass
     """ For every user created """
-    if created:
-        """It will create user's investment record with all the companies"""
-        for company in Company.objects.all():
-            obj = InvestmentRecord.objects.create(user=instance, company=company)
+    #if created:
+    # It will create user's investment record with all the companies
+    #This is inaccurate - Iski wajah se portfolio mein saare stocks dikh rahe hai
+        #for company in Company.objects.all():
+        #    obj = InvestmentRecord.objects.create(user=instance, company=company)
 
 
 post_save.connect(post_save_user_investment_create_receiver, sender=User)
@@ -538,7 +552,7 @@ class PlayerStats(models.Model):
     playing_role = models.CharField(max_length=50, default='NA')
     batting_style = models.CharField(max_length=50, default='NA')
     bowling_style = models.CharField(max_length=50, default='NA')
-    team = models.CharField(max_length=50, default='NA')
+    ipl_team = models.CharField(max_length=50, default='NA')
     matches = models.IntegerField(default=0)
     batting_innings = models.IntegerField(default=0)
     notouts = models.IntegerField(default=0)
@@ -567,7 +581,11 @@ class PlayerStats(models.Model):
     tenfers = models.IntegerField(default=0)
     #age = models.CharField(max_length=50, default='NA')
 
+    def __str__(self):
+        return self.name
+
 # This table will store data for the last 'n' matches for every player
+# IDEA - Get rid of the Current Form table altogether. All the data we need will be available in a much better and at a much granular level in the 'Match' table
 class CurrentForm(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=50, unique=True)
@@ -575,6 +593,7 @@ class CurrentForm(models.Model):
     matches = models.IntegerField(default=0)
     runs = models.IntegerField(default=0)
     balls_faced = models.IntegerField(default=0)
+    #batting strike rate to be calculated from runs/balls_faced
     fours = models.IntegerField(default=0)
     sixes = models.IntegerField(default=0)
     catches = models.IntegerField(default=0)
@@ -585,8 +604,9 @@ class CurrentForm(models.Model):
     last_match_pushed = models.IntegerField(default=0)
 
 class Match(models.Model):
-    id = models.IntegerField(primary_key=True)
-    counter = models.IntegerField(default=0)
+    #id = models.IntegerField(primary_key=True)
+    match_id = models.IntegerField(default=0) #This wil be Cricinfo's match id
+    player_id = models.ForeignKey(PlayerStats, on_delete=models.CASCADE, default=0)
     name = models.CharField(max_length=50, unique=True)
     team = models.CharField(max_length=50, default='NA')
     runs = models.IntegerField(default=0)
@@ -602,8 +622,8 @@ class Match(models.Model):
 extra_types = ((0, 'none'),(1, 'wides'),(2,'no-ball'),(3,'byes'),(4,'legbyes'))
 dismissal_types = ((0,'none'),(1, 'caught'),(2,'bowled'),(3,'lbw'),(4,'runout'),(5,'retired hurt'))
 
-""" class ScoreCard(models.Model):
-    id = models.IntegerField(primary_key=True)
+'''class ScoreCard(models.Model):
+    id = models.IntegerField(primary_key=True) #This wil be Cricinfo's match id
     batting_team = models.CharField(max_length=50, default='NA')
     bowling_team = models.CharField(max_length=50, default='NA')
     batsman = models.CharField(max_length=50, default='NA')
@@ -613,4 +633,5 @@ dismissal_types = ((0,'none'),(1, 'caught'),(2,'bowled'),(3,'lbw'),(4,'runout'),
     runs_extras = models.IntegerField(default=0)
     extra_type = models.CharField(choices=extra_types, default='NONE', max_length=20)
     dismissal_type = models.CharField(choices=dismissal_types, default='NONE', max_length=20)
-    dismissed_batsman = models.CharField(max_length=50, default='NA') """
+    dismissed_batsman = models.CharField(max_length=50, default='NA')
+    fielder = models.CharField(max_length=50, default='NA')'''

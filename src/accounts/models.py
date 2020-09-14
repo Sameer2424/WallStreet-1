@@ -26,11 +26,11 @@ class UserManager(BaseUserManager):
 
     def create_user(self, username, email, password=None, full_name=None, is_active=True, is_staff=False, is_superuser=False):
         if not username:
-            raise ValueError('Users must have a unique username.')
+            raise ValueError('Username must be unique.')
         if not email:
-            raise ValueError('Users must have an email.')
+            raise ValueError('Email required.')
         if not password:
-            raise ValueError('Users must have a password.')
+            raise ValueError('Password required.')
 
         user_obj = self.model(
             username=username,
@@ -71,7 +71,8 @@ class User(AbstractBaseUser):
     username = models.CharField(unique=True, max_length=120)
     email = models.EmailField(unique=True, max_length=255)
     full_name = models.CharField(max_length=255, blank=True, null=True)
-    cash = models.DecimalField(max_digits=20, decimal_places=2, default=DEFAULT_LOAN_AMOUNT)
+    cash = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    escrow = models.DecimalField(max_digits=20, decimal_places=2, default=0) # When user places a buy order, the order value will be subtracted from his cash and stored here. If the order is unsuccessful or cancelled, this amount will be added back to cash.
     loan = models.DecimalField(max_digits=20, decimal_places=2, default=DEFAULT_LOAN_AMOUNT)
     loan_count = models.IntegerField(default=1)  # For arithmetic interest calculation
     loan_count_absolute = models.IntegerField(default=1)  # For overall loan issue count

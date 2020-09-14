@@ -14,7 +14,7 @@
 
 {% block content %}
 
-{% include 'market/snippets/inner_navbar.html' with company_list=object_list %}
+<!-- {% include 'market/snippets/inner_navbar.html' with company_list=object_list %} -->
 
 <div class="row">
     <div class="col-12">
@@ -22,6 +22,7 @@
     </div>
     <div class="col-12 text-center mt-5">
     <p style="font-size: 25px;"><b>Cash Available:</b> &#8377; {{ request.user.cash|intcomma }}</p><br>
+    <p style="font-size: 15px;"><b>Escrow:</b> &#8377; {{ request.user.escrow|intcomma }}</p><br>
     </div>
 </div>
 {% if investments %}

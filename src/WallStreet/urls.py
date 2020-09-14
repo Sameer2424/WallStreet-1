@@ -5,9 +5,7 @@ from django.conf.urls.static import static
 from django.views.generic import RedirectView
 
 from .views import HomeView, instruction_view
-from accounts.views import (
-    RegisterView, LoginView, logout_view, ProfileView, LeaderBoardView
-)
+from accounts.views import RegisterView, LoginView, logout_view, ProfileView, LeaderBoardView
 from market.views import NewsView
 
 

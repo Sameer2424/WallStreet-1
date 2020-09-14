@@ -10,7 +10,7 @@
 {% url 'account:loan' as loan_url %}
 {% url 'news' as news_url %}
 {% url 'instructions' as instructions_url %}
-
+{% url 'market:dashboard' as dashboard_url %}
 
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #000000;">
 	<div class="container">
@@ -90,6 +90,10 @@
 						<li class="nav-item">
 							<a class="nav-link" href="/admin/" target="blank">Admin</a>
 						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/market/match/" target="blank">Live scoring</a>
+						</li>
+						
 					{% endif %}
 				{% else %}
 					<li class="nav-item {% if request.path == login_url %}active{% endif %}">

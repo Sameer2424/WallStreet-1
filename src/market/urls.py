@@ -6,7 +6,9 @@ from .views import (
     CompanyCMPChartData,
     CompanyAdminCompanyUpdateView,
     deduct_tax,
-    UpdateMarketView
+    UpdateMarketView,
+    DashboardView,
+    MatchCreationView
 )
 
 from . import views
@@ -15,7 +17,10 @@ app_name = 'Market'
 
 
 urlpatterns = [
+    #path("dashboard", views.dashboard, name = "dashboard"),
     path("executetrades", views.executetrades, name = "executetrades"),
+    url(r'^match/', MatchCreationView.as_view(), name='match'),
+    url(r'^dashboard/', DashboardView.as_view(), name='dashboard'),
     url(r'^overview/$', MarketOverview.as_view(), name='overview'),
     url(r'^transact/(?P<code>\w+)$', CompanyTransactionView.as_view(), name='transaction'),
     url(r'^admin/(?P<code>\w+)$', CompanyAdminCompanyUpdateView.as_view(), name='admin'),

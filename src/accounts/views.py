@@ -14,7 +14,7 @@ from django.urls import reverse, reverse_lazy
 
 from .forms import LoginForm, RegisterForm, ReactivateEmailForm
 from .models import EmailActivation
-from market.models import InvestmentRecord, TransactionScheduler
+from market.models import InvestmentRecord, TransactionScheduler, Company
 from WallStreet.mixins import (
     AnonymousRequiredMixin,
     RequestFormAttachMixin,
@@ -260,6 +260,7 @@ class ProfileView(LoginRequiredMixin, CountNewsMixin, DetailView):
         if qs.count() >= 1:
             context['net_worth'] = InvestmentRecord.objects.calculate_net_worth(self.request.user)
             context['investments'] = qs
+            context['company_list'] = Company.objects.all()
         return context
 
 

@@ -5,6 +5,11 @@
 <title>Profile</title>
 {% endblock %}
 
+{% block out_content_top %}
+    <!-- marquee for cmp --> <!--company_list comes from class CompanyTransactionView defined in market:views.py-->
+    {% include 'market/snippets/cmp_marquee.html' with company_list=company_list %} 
+{% endblock %}
+
 {% block content %}
 
 <div class="row">
@@ -19,6 +24,7 @@
 <div class="row">
     <div class="col-12 text-center mt-5 mb-3">
     <h3><b>Cash Available:</b> &#8377; {{ object.cash|intcomma }}</h3>
+    <h6><b>Escrow:</b> &#8377; {{ object.escrow|intcomma }}</h6>
     </div>
     <div class="col-12 text-center mb-5">
     <h3><b>Net Worth:</b> &#8377; {{ net_worth|intcomma }}</h3>
