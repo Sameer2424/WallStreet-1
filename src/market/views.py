@@ -16,7 +16,7 @@ from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import Company, InvestmentRecord, Transaction, CompanyCMPRecord, News, UserNews, TransactionScheduler, Buybook, Sellbook, CompletedOrders
+from .models import Company, InvestmentRecord, Transaction, CompanyCMPRecord, News, UserNews, TransactionScheduler, Buybook, Sellbook, CompletedOrders, PlayerStats, home_team, away_team
 from .forms import CompanyChangeForm, ScoreCardForm, MatchCreationForm
 from WallStreet.mixins import LoginRequiredMixin, AdminRequiredMixin, CountNewsMixin
 from stocks.models import StocksDatabasePointer
@@ -318,6 +318,7 @@ def executetrades(request):
         context = {'form':form}
         return render(request, 'market/dashboard.html')'''
 
+
 class MatchCreationView(LoginRequiredMixin, CountNewsMixin, View):
     template_name = 'market/match_details.html'
     url = 'match'
@@ -333,15 +334,73 @@ class MatchCreationView(LoginRequiredMixin, CountNewsMixin, View):
         # This code will run whenever the submit button is pressed on the Match Creation form.
         # Before displaying the score card dashboard, we need to create 22 entries in the 'Match' table with the players that have been selected in the Match form.
         #submitbutton = request.POST.get("submit")
-        matchform = MatchCreationForm(request.POST or None)
-        form = ScoreCardForm(None) # We need a blank form to start
+
+        form = MatchCreationForm(request.POST or None)
+        
+        # form = ScoreCardForm(request.POST or None)
+        
+        # if form.is_valid():
+        #     batsman = form.cleaned_data.get("batsman")
+        #     bowler = form.cleaned_data.get("bowler")
+        #     nonstriker = form.cleaned_data.get("nonstriker")
+        #     runs_batsman = form.cleaned_data.get("runs_batsman")
+        #     print(batsman)
+        #     print(bowler)
+        #     print(nonstriker)
+        #     print(runs_batsman)
+        
         match_id = 0
-        if matchform.is_valid():
-            match_id = matchform.cleaned_data.get("match_id")
-            #bowler = matchform.cleaned_data.get("bowler")
-            #nonstriker = matchform.cleaned_data.get("nonstriker")
-        context = {'form':form}
-        return render(request, 'market/dashboard.html', context)
+        home_team = ''
+        away_team = ''
+        home_team_players=[]
+        away_team_players=[]
+        
+        #form = ScoreCardForm(None) # We need a blank form to start
+        if form.is_valid():
+            match_id = form.cleaned_data.get("match_id")
+            home_team = form.cleaned_data.get("home_team")
+            away_team = form.cleaned_data.get("away_team")
+            home_team_players = form.cleaned_data.get("home_team_players") # This would be a list of player ids
+            away_team_players = form.cleaned_data.get("away_team_players") # This would be a list of player ids
+            batting_team = form.cleaned_data.get("batting_team")
+            print(match_id)
+            print(home_team)
+            print(away_team)
+            print(home_team_players)
+            print(away_team_players)
+            print(batting_team)
+            # Data has been collected in variables, now pushing them into the db
+            conn = psycopg2.connect(database="wallstreet", user="postgres", password="admin", host="localhost", port="5432")
+            cursor = conn.cursor()
+
+            sql = "insert into market_currentmatch (match_id, home_team, away_team, batting_team) values (" + str(match_id) + ", '" + home_team + "', '" + away_team + "', '" + batting_team + "');"
+            cursor.execute(sql)
+
+            for home_team_player in home_team_players:
+                player = PlayerStats.objects.all().filter(id=int(home_team_player))
+                for p in player:
+                    print("Player id: " + str(p.id))
+                    print("Player name: " + p.name)
+                    print("Player team: " + p.ipl_team)
+                sql = "insert into market_match (runs, balls_faced, fours, sixes, catches, stumpings, balls_bowled, runs_conceded, wickets, match_id, player_id, name, team) values (0, 0, 0, 0, 0, 0, 0, 0, 0, " + str(match_id) + ", '" + str(p.id) + "', '" + p.name + "', '" + p.ipl_team + "');"
+                cursor.execute(sql)
+
+            for away_team_player in away_team_players:
+                player = PlayerStats.objects.all().filter(id=int(away_team_player))
+                for p in player:
+                    print("Player id: " + str(p.id))
+                    print("Player name: " + p.name)
+                    print("Player team: " + p.ipl_team)
+                sql = 'insert into market_match (runs, balls_faced, fours, sixes, catches, stumpings, balls_bowled, runs_conceded, wickets, match_id, player_id, name, team) values (0, 0, 0, 0, 0, 0, 0, 0, 0, ' + str(match_id) + ", '" + str(p.id) + "', '" + p.name + "', '" + p.ipl_team + "');"
+                cursor.execute(sql)
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            # return redirect('/match/dashboard/?match_id=' + match_id +'&home_team=' + home_team + '&away_team=' + away_team)
+        context = {'form':form, 'match_id': match_id, 'home_team':home_team,'away_team':away_team}
+        return render(request, 'market/match_details.html', context)
 
 
 class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
@@ -349,18 +408,42 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
     url = 'dashboard'
 
     def get(self, request, *args, **kwargs):
+        current_match = CurrentMatch.objects.all()
+        for match in current_match:
+            match_id = match.match_id
+            home_team = match.home_team
+            away_team = match.away_team
+            batting_team = match.batting_team
+        
+        print(match_id)
+        print(home_team)
+        print(away_team)
+        print(batting_team)
+        batting_team = PlayerStats.objects.all().filter(ipl_team__icontains=home_team)
+        bowling_team = PlayerStats.objects.all().filter(ipl_team__icontains=away_team)
         form = ScoreCardForm(request.POST or None, request.FILES or None)
-        context = {'form':form}
+        context = {'form': form, 'batting_team':batting_team, 'bowling_team':bowling_team}
         return render(request, 'market/dashboard.html', context)
     
     def post(self, request, *args, **kwargs):
-        form = ScoreCardForm(request.POST or None)
+        batting_team = PlayerStats.objects.all().filter(ipl_team__icontains=home_team)
+        bowling_team = PlayerStats.objects.all().filter(ipl_team__icontains=away_team)
+        form = ScoreCardForm(request.POST)
+        batsman = ''
+        bowler = ''
+        nonstriker = ''
+        runs_batsman = 0
         if form.is_valid():
             batsman = form.cleaned_data.get("batsman")
             bowler = form.cleaned_data.get("bowler")
             nonstriker = form.cleaned_data.get("nonstriker")
-            
-        context = {'form': form}
+            runs_batsman = form.cleaned_data.get("runs_batsman")
+        print(batsman)
+        print(bowler)
+        print(nonstriker)
+        print(runs_batsman)
+        
+        context = {'form': form, 'batting_team':batting_team, 'bowling_team':bowling_team}
         #, 'batsman': batsman, 'nonstriker': nonstriker, 'bowler':bowler, 'submitbutton':submitbutton}
         return render(request, 'market/dashboard.html', context)
 

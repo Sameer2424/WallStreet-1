@@ -7,6 +7,8 @@ from decimal import Decimal
 
 User = get_user_model()
 
+home_team = ''
+away_team = ''
 
 TRANSACTION_MODES = (
     ('buy', 'BUY'),
@@ -584,6 +586,44 @@ class PlayerStats(models.Model):
     def __str__(self):
         return self.name
 
+class PlayerStatsBackup(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
+    full_name = models.CharField(max_length=200, default='NA')
+    dob = models.CharField(max_length=50, default='NA')
+    pob = models.CharField(max_length=50, default='NA')
+    playing_role = models.CharField(max_length=50, default='NA')
+    batting_style = models.CharField(max_length=50, default='NA')
+    bowling_style = models.CharField(max_length=50, default='NA')
+    ipl_team = models.CharField(max_length=50, default='NA')
+    matches = models.IntegerField(default=0)
+    batting_innings = models.IntegerField(default=0)
+    notouts = models.IntegerField(default=0)
+    runs = models.IntegerField(default=0)
+    highest = models.CharField(max_length = 10, default='0')
+    batting_average = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    balls_faced = models.IntegerField(default=0)
+    batting_sr = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    hundreds = models.IntegerField(default=0)
+    fifties = models.IntegerField(default=0)
+    fours = models.IntegerField(default=0)
+    sixes = models.IntegerField(default=0)
+    catches = models.IntegerField(default=0)
+    stumpings = models.IntegerField(default=0)
+    bowling_innings = models.IntegerField(default=0)
+    balls_bowled = models.IntegerField(default=0)
+    runs_conceded = models.IntegerField(default=0)
+    wickets = models.IntegerField(default=0)
+    bbi = models.CharField(max_length = 10, default='0')
+    bbm = models.CharField(max_length = 10, default='0')
+    bowling_average = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    economy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    bowling_sr = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    fourfers = models.IntegerField(default=0)
+    fifers = models.IntegerField(default=0)
+    tenfers = models.IntegerField(default=0)
+
+
 # This table will store data for the last 'n' matches for every player
 # IDEA - Get rid of the Current Form table altogether. All the data we need will be available in a much better and at a much granular level in the 'Match' table
 class CurrentForm(models.Model):
@@ -606,8 +646,8 @@ class CurrentForm(models.Model):
 class Match(models.Model):
     #id = models.IntegerField(primary_key=True)
     match_id = models.IntegerField(default=0) #This wil be Cricinfo's match id
-    player_id = models.ForeignKey(PlayerStats, on_delete=models.CASCADE, default=0)
-    name = models.CharField(max_length=50, unique=True)
+    player = models.ForeignKey(PlayerStats, on_delete=models.CASCADE, default=0)
+    name = models.CharField(max_length=50, default='NA')
     team = models.CharField(max_length=50, default='NA')
     runs = models.IntegerField(default=0)
     balls_faced = models.IntegerField(default=0)
@@ -622,7 +662,7 @@ class Match(models.Model):
 extra_types = ((0, 'none'),(1, 'wides'),(2,'no-ball'),(3,'byes'),(4,'legbyes'))
 dismissal_types = ((0,'none'),(1, 'caught'),(2,'bowled'),(3,'lbw'),(4,'runout'),(5,'retired hurt'))
 
-'''class ScoreCard(models.Model):
+class ScoreCard(models.Model):
     id = models.IntegerField(primary_key=True) #This wil be Cricinfo's match id
     batting_team = models.CharField(max_length=50, default='NA')
     bowling_team = models.CharField(max_length=50, default='NA')
@@ -634,4 +674,12 @@ dismissal_types = ((0,'none'),(1, 'caught'),(2,'bowled'),(3,'lbw'),(4,'runout'),
     extra_type = models.CharField(choices=extra_types, default='NONE', max_length=20)
     dismissal_type = models.CharField(choices=dismissal_types, default='NONE', max_length=20)
     dismissed_batsman = models.CharField(max_length=50, default='NA')
-    fielder = models.CharField(max_length=50, default='NA')'''
+    fielder = models.CharField(max_length=50, default='NA')
+
+class CurrentMatch(models.Model):
+    match_id = models.IntegerField(default=0) #This wil be Cricinfo's match id
+    home_team = models.CharField(max_length=50, default='NA')
+    away_team = models.CharField(max_length=50, default='NA')
+    batting_team = models.CharField(max_length=50, default='NA')
+    #home_team_players = models.CharField(max_length=100, default='NA') # This could be a string of player ids that will need to be split and queried
+    #away_team_players = models.CharField(max_length=100, default='NA') # This could be a string of player ids that will need to be split and queried
