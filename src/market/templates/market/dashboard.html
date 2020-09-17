@@ -9,10 +9,10 @@
 
 {% block content %}
 <p>
-    <h5>Match no.: {{ match_id }} - {{home_team}} vs {{away_team}} </h5>
+    <h5>Match no.: {{ match_id }} - {{ home_team }} vs {{ away_team }} </h5>
 </p>
 <p>
-<form action='' method='POST'>
+<form action="" method='POST'>
     {% csrf_token %}
     {{ form.as_p }}
     <input type="Submit" name="submit" value="Submit"/>
