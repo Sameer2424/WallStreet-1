@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -16,7 +16,7 @@ from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import Company, InvestmentRecord, Transaction, CompanyCMPRecord, News, UserNews, TransactionScheduler, Buybook, Sellbook, CompletedOrders, PlayerStats, home_team, away_team
+from .models import Company, InvestmentRecord, Transaction, CompanyCMPRecord, News, UserNews, TransactionScheduler, Buybook, Sellbook, CompletedOrders, PlayerStats, CurrentMatch, Match
 from .forms import CompanyChangeForm, ScoreCardForm, MatchCreationForm
 from WallStreet.mixins import LoginRequiredMixin, AdminRequiredMixin, CountNewsMixin
 from stocks.models import StocksDatabasePointer
@@ -68,21 +68,6 @@ class MarketOverview(LoginRequiredMixin, CountNewsMixin, ListView):
         context = super(MarketOverview, self).get_context_data(*args, **kwargs)
         context['investments'] = InvestmentRecord.objects.filter(user=self.request.user)
         return context
-    
-    '''def get_context_data(self, *args, **kwargs):
-        user = self.request.user
-        context = super(MarketOverview, self).get_context_data(*args, **kwargs)
-        #userorders = CompletedOrders.objects.filter(user=self.request.user)
-        
-        sql = 'select get_portfolio(' + str(user.id) + ');' #This gives us the user's portfolio table
-        conn = psycopg2.connect(database="wallstreet", user="postgres", password="admin", host="localhost", port="5432")
-        cursor = conn.cursor()
-        result = cursor.execute(sql)
-        context['investments'] = result #Context needs to be assigned a result set.  Not clear how to assign it a result set that does come from <table>.objects.filter(<condition>)
-        cursor.close()
-        conn.close()
-        return context'''
-
 
 class CompanyAdminCompanyUpdateView(AdminRequiredMixin, CountNewsMixin, View):
     def get(self, request, *args, **kwargs):
@@ -382,7 +367,7 @@ class MatchCreationView(LoginRequiredMixin, CountNewsMixin, View):
                     print("Player id: " + str(p.id))
                     print("Player name: " + p.name)
                     print("Player team: " + p.ipl_team)
-                sql = "insert into market_match (runs, balls_faced, fours, sixes, catches, stumpings, balls_bowled, runs_conceded, wickets, match_id, player_id, name, team) values (0, 0, 0, 0, 0, 0, 0, 0, 0, " + str(match_id) + ", '" + str(p.id) + "', '" + p.name + "', '" + p.ipl_team + "');"
+                sql = "insert into market_match (runs, balls_faced, fours, sixes, catches, stumpings, runouts, dismissed, balls_bowled, runs_conceded, wickets, match_id, player_id, name, team) values (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, " + str(match_id) + ", '" + str(p.id) + "', '" + p.name + "', '" + p.ipl_team + "');"
                 cursor.execute(sql)
 
             for away_team_player in away_team_players:
@@ -391,7 +376,7 @@ class MatchCreationView(LoginRequiredMixin, CountNewsMixin, View):
                     print("Player id: " + str(p.id))
                     print("Player name: " + p.name)
                     print("Player team: " + p.ipl_team)
-                sql = 'insert into market_match (runs, balls_faced, fours, sixes, catches, stumpings, balls_bowled, runs_conceded, wickets, match_id, player_id, name, team) values (0, 0, 0, 0, 0, 0, 0, 0, 0, ' + str(match_id) + ", '" + str(p.id) + "', '" + p.name + "', '" + p.ipl_team + "');"
+                sql = 'insert into market_match (runs, balls_faced, fours, sixes, catches, stumpings, runouts, dismissed, balls_bowled, runs_conceded, wickets, match_id, player_id, name, team) values (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,' + str(match_id) + ", '" + str(p.id) + "', '" + p.name + "', '" + p.ipl_team + "');"
                 cursor.execute(sql)
             
             conn.commit()
@@ -403,112 +388,152 @@ class MatchCreationView(LoginRequiredMixin, CountNewsMixin, View):
         return render(request, 'market/match_details.html', context)
 
 
+def match_create_view(request):
+    pass
+    # form = MatchCreationForm()
+    # if request.method == 'POST':
+    #     form = MatchCreationForm(request.POST)
+    #     if form.is_valid():
+    #         form.save()
+    #         return redirect('match_add')
+    # return render(request, 'market/match_details.html', {'form': form})
+
+
+def match_update_view(request, pk):
+    pass
+    # match = get_object_or_404(Match, pk=pk)
+    # form = MatchCreationForm(instance=match)
+    # if request.method == 'POST':
+    #     form = MatchCreationForm(request.POST, instance=match)
+    #     if form.is_valid():
+    #         form.save()
+    #         return redirect('match_change', pk=pk)
+    # return render(request, 'market/match_details.html', {'form': form})
+
+# AJAX
+def load_players(request):
+    home_team = request.GET.get('home_team')
+    away_team = request.GET.get('away_team')
+    home_team_players = PlayerStats.objects.filter(ipl_team=home_team).all()
+    away_team_players = PlayerStats.objects.filter(ipl_team=away_team).all()
+    return render(request, 'market/player_check_list_options.html', {'home_team_players': home_team_players,'away_team_players':away_team_players})
+    # return JsonResponse(list(cities.values('id', 'name')), safe=False)
+
 class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
     template_name = 'market/dashboard.html'
     url = 'dashboard'
 
     def get(self, request, *args, **kwargs):
+        match_id = 0
+        home_team = ''
+        away_team = ''
+        batting_team = ''
         current_match = CurrentMatch.objects.all()
         for match in current_match:
             match_id = match.match_id
             home_team = match.home_team
             away_team = match.away_team
             batting_team = match.batting_team
-        
-        print(match_id)
-        print(home_team)
-        print(away_team)
-        print(batting_team)
-        batting_team = PlayerStats.objects.all().filter(ipl_team__icontains=home_team)
-        bowling_team = PlayerStats.objects.all().filter(ipl_team__icontains=away_team)
+            print(match_id)
+            print(home_team)
+            print(away_team)
+            print(batting_team)
+        batters = Match.objects.all().filter(team=batting_team)
+        if batting_team == home_team:
+            bowling_team = away_team
+        else:
+            bowling_team = home_team
+        bowlers = Match.objects.all().filter(team=bowling_team)
         form = ScoreCardForm(request.POST or None, request.FILES or None)
-        context = {'form': form, 'batting_team':batting_team, 'bowling_team':bowling_team}
+        context = {'form': form, 'batters':batters, 'bowlers':bowlers, 'match_id':match_id, 'home_team':home_team, 'away_team':away_team}
         return render(request, 'market/dashboard.html', context)
     
     def post(self, request, *args, **kwargs):
-        batting_team = PlayerStats.objects.all().filter(ipl_team__icontains=home_team)
-        bowling_team = PlayerStats.objects.all().filter(ipl_team__icontains=away_team)
+        current_match = CurrentMatch.objects.all()
+        for match in current_match:
+            match_id = match.match_id
+            home_team = match.home_team
+            away_team = match.away_team
+            batting_team = match.batting_team
+
         form = ScoreCardForm(request.POST)
-        batsman = ''
-        bowler = ''
-        nonstriker = ''
+        batsman = 0
+        bowler = 0
+        nonstriker = 0
         runs_batsman = 0
+        runs_extra = 0
+        extra_type = 0
+        dismissal_type = 0
+        dismissed_batsman = 0
+        fielder = 0
         if form.is_valid():
             batsman = form.cleaned_data.get("batsman")
             bowler = form.cleaned_data.get("bowler")
             nonstriker = form.cleaned_data.get("nonstriker")
             runs_batsman = form.cleaned_data.get("runs_batsman")
-        print(batsman)
-        print(bowler)
-        print(nonstriker)
-        print(runs_batsman)
+            runs_extra = form.cleaned_data.get("runs_extra")
+            extra_type = form.cleaned_data.get("extra_type")
+            dismissal_type = form.cleaned_data.get("dismissal_type")
+            dismissed_batsman = form.cleaned_data.get("dismissed_batsman")
+            fielder = form.cleaned_data.get("fielder")
+            print(batsman)
+            print(bowler)
+            print(nonstriker)
+            print(runs_batsman)
+            print(runs_extra)
+            print(extra_type)
+            print(dismissal_type)
+            print(dismissed_batsman)
+            print(fielder)
         
-        context = {'form': form, 'batting_team':batting_team, 'bowling_team':bowling_team}
+        batsman, _ = Match.objects.get_or_create(player_id=batsman)
+        nonstriker, _ = Match.objects.get_or_create(player_id=nonstriker)
+        bowler, _ = Match.objects.get_or_create(player_id=bowler)
+        fielder, _ = Match.objects.get_or_create(player_id=fielder)
+        dismissed_batsman, _ = Match.objects.get_or_create(player_id=dismissed_batsman)
+        
+        batsman.runs = batsman.runs + int(runs_batsman)
+        if int(runs_batsman) == 4:
+            batsman.fours = batsman.fours + 1
+        elif int(runs_batsman) == 6:
+            batsman.sixes = batsman.sixes + 1
+        
+        if int(runs_extra) == 0:
+            bowler.balls_bowled = bowler.balls_bowled + 1
+            batsman.balls_faced = batsman.balls_faced + 1
+        else:
+            if int(extra_type) == 1 or int(extra_type) == 2:
+                bowler.runs_conceded = bowler.runs_conceded + int(runs_extra)
+            elif int(extra_type) == 3 or int(extra_type) == 4:
+                bowler.balls_bowled = bowler.balls_bowled + 1
+        
+        if int(dismissal_type) == 1:
+            dismissed_batsman.dismissed = 1
+            fielder.catches = fielder.catches + 1
+            bowler.wickets = bowler.wickets + 1
+        elif int(dismissal_type) == 2:
+            dismissed_batsman.dismissed = 1
+            bowler.wickets = bowler.wickets + 1
+        elif int(dismissal_type) == 3:
+            dismissed_batsman.dismissed = 1
+            bowler.wickets = bowler.wickets + 1
+        elif int(dismissal_type) == 4:
+            dismissed_batsman.dismissed = 1
+            fielder.runouts = fielder.runouts + 1
+        elif int(dismissal_type) == 5:
+            dismissed_batsman.dismissed = 1
+            fielder.stumpings = fielder.stumpings + 1
+            bowler.wickets = bowler.wickets + 1
+    
+        batsman.save()
+        bowler.save()
+        nonstriker.save()
+        fielder.save()
+        dismissed_batsman.save()
+
+        context = {'form': form, 'match_id':match_id, 'home_team':home_team, 'away_team':away_team}
         #, 'batsman': batsman, 'nonstriker': nonstriker, 'bowler':bowler, 'submitbutton':submitbutton}
         return render(request, 'market/dashboard.html', context)
 
 
 # Open a connection pool and keep them open.  Whenever the db needs to be hit, you fetch a connection, do whatever you need to, and put it back in the pool.
-
-#Dashboard views
-""" def score_card_create_view(request):
-
-    form = ScoreCardForm(request.POST or None, request.FILES or None)
-    if request.method == "POST":
-        if form.is_valid():
-            form.save()
-    context = {
-        'form':form,
-    }
-
-    return render(request, "dashboard/score_card_create_view.html",context)
-
-
-def score_card_list_view(request):
-    allmatches = ScoreCard.objects.all()
-
-    context = {'allmatches' : allmatches,}
-
-    return render(request, "dashboard/score_card_list_view.html", context)
-
-
-def score_card_detail_view(request,id):
-    matches = ScoreCard.objects.get(id = id)
-    obj = get_object_or_404(ScoreCard, id=id)
-    form = ScoreCardForm(request.POST or None, instance= obj)
-    if form.is_valid():
-        form.save()
-        # return HttpResponseRedirect("list/"+id)
-    
-    context = {
-        'matches' : matches,
-        'form' : form,
-    }
-    batsman = match.objects.get(player_id =batsmanid, match_id = matchid)
-    batsman = match.objects.get(player_id =batsmanid, match_id = matchid)
-
-    
-    
-
-    nonstriker = match.objects.get(player_id = nonstrikerid, match_id = matchid)
-    bolwer = 
-    fielder = 
-    batsman.runs = batsman.runs + <runs waali field ki entry>
-    batsman.save()
-
-    return render(request,'dashboard/score_card_detail_view.html', context)
-
-
-def score_card_update_view(request,id):
-
-    obj = get_object_or_404(ScoreCard, id=id)
-
-    form = ScoreCardForm(request.POST or None, instance= obj)
-
-    if form.is_valid():
-        form.save()
-        return HttpResponseRedirect("/"+id)
-
-    context = {'form' : form,}
-
-    return render (request,'score_card_update_view.html', context) """

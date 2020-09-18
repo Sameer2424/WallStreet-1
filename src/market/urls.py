@@ -26,5 +26,8 @@ urlpatterns = [
     url(r'^admin/(?P<code>\w+)$', CompanyAdminCompanyUpdateView.as_view(), name='admin'),
     url(r'^company/api/(?P<code>\w+)$', CompanyCMPChartData.as_view(), name='cmp_api_data'),
     url(r'^tax/$', deduct_tax, name='tax'),
-    url(r'^update/$', UpdateMarketView.as_view(), name='update')
+    url(r'^update/$', UpdateMarketView.as_view(), name='update'),
+    path('add/', views.match_create_view, name='match_add'),
+    path('<int:pk>/', views.match_update_view, name='match_change'),
+    path('ajax/load-players/', views.load_players, name='ajax_load_players') # AJAX
 ]

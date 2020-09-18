@@ -655,12 +655,15 @@ class Match(models.Model):
     sixes = models.IntegerField(default=0)
     catches = models.IntegerField(default=0)
     stumpings = models.IntegerField(default=0)
+    runouts = models.IntegerField(default=0)
+    runouts = models.IntegerField(default=0)
     balls_bowled = models.IntegerField(default=0)
     runs_conceded = models.IntegerField(default=0)
     wickets = models.IntegerField(default=0)
+    dismissed = models.IntegerField(default=0)
 
 extra_types = ((0, 'none'),(1, 'wides'),(2,'no-ball'),(3,'byes'),(4,'legbyes'))
-dismissal_types = ((0,'none'),(1, 'caught'),(2,'bowled'),(3,'lbw'),(4,'runout'),(5,'retired hurt'))
+dismissal_types = ((0,'none'),(1, 'caught'),(2,'bowled'),(3,'lbw'),(4,'runout'),(5,'stumped'),(6,'retired-hurt'))
 
 class ScoreCard(models.Model):
     id = models.IntegerField(primary_key=True) #This wil be Cricinfo's match id
