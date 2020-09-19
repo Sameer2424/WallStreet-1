@@ -421,7 +421,7 @@ class InvestmentRecordManager(models.Manager):
         amount = Decimal(0.00)
         for inv in qs:
             amount += Decimal(inv.stocks) * inv.company.cmp
-        return amount + user.cash
+        return amount + user.cash + user.escrow
 
 
 class InvestmentRecord(models.Model):
@@ -543,7 +543,9 @@ class PlayerValuations(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=50, unique=True)
     team = models.CharField(max_length=50, default='NA')
-    valuation = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    system_valuation = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    current_form = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    mkt_qty = models.IntegerField(default=100000)
 
 class PlayerStats(models.Model):
     id = models.IntegerField(primary_key=True)

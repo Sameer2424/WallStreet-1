@@ -29,10 +29,14 @@
             </a>
 
             <!--Adding a button to execute trades-->
-            <form action= 'market\executetrades'>
-                <button type="submit" class="btn btn-success mt-3">Execute Trades</button>
-            </form>
-
+            {% if request.user.is_superuser %}
+                <form action= 'market\executetrades'>
+                    <button type="submit" class="btn btn-success mt-3">Execute Trades</button>
+                </form>
+                <p>{{ executionsuccess }}</p>
+            {% endif %}
+            
+            
             </div>
         </div>
         </div>

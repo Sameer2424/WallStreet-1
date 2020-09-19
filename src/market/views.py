@@ -279,8 +279,8 @@ def executetrades(request):
     conn.commit()
     cursor.close()
     conn.close()
-    print("Check if this is getting printed")
-    return HttpResponse(status=200)
+    message = 'Trades successfully executed.'
+    return redirect('/', {'executionsuccess':message})
 
 '''def dashboard(request):
     form = ScoreCardForm(request.POST or None, request.FILES or None)
@@ -357,7 +357,8 @@ class MatchCreationView(LoginRequiredMixin, CountNewsMixin, View):
             # Data has been collected in variables, now pushing them into the db
             conn = psycopg2.connect(database="wallstreet", user="postgres", password="admin", host="localhost", port="5432")
             cursor = conn.cursor()
-
+            sql = "delete from market_currentmatch where match_id <> " + str(match_id) + ";"
+            cursor.execute(sql)
             sql = "insert into market_currentmatch (match_id, home_team, away_team, batting_team) values (" + str(match_id) + ", '" + home_team + "', '" + away_team + "', '" + batting_team + "');"
             cursor.execute(sql)
 
@@ -424,26 +425,32 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
     url = 'dashboard'
 
     def get(self, request, *args, **kwargs):
-        match_id = 0
-        home_team = ''
-        away_team = ''
-        batting_team = ''
-        current_match = CurrentMatch.objects.all()
-        for match in current_match:
-            match_id = match.match_id
-            home_team = match.home_team
-            away_team = match.away_team
-            batting_team = match.batting_team
-            print(match_id)
-            print(home_team)
-            print(away_team)
-            print(batting_team)
-        batters = Match.objects.all().filter(team=batting_team)
+        match, _ = CurrentMatch.objects.get_or_create()
+        match_id = match.match_id
+        home_team = match.home_team
+        away_team = match.away_team
+        batting_team = match.batting_team
+        print(match_id)
+        print(home_team)
+        print(away_team)
+        print(batting_team)
+        # current_match = CurrentMatch.objects.all()
+        # for match in current_match:
+        #     match_id = match.match_id
+        #     home_team = match.home_team
+        #     away_team = match.away_team
+        #     batting_team = match.batting_team
+        #     print(match_id)
+        #     print(home_team)
+        #     print(away_team)
+        #     print(batting_team)
+        batters = Match.objects.all().filter(team__icontains=batting_team)
         if batting_team == home_team:
             bowling_team = away_team
         else:
             bowling_team = home_team
-        bowlers = Match.objects.all().filter(team=bowling_team)
+        print(bowling_team)
+        bowlers = Match.objects.all().filter(team__icontains=bowling_team)
         form = ScoreCardForm(request.POST or None, request.FILES or None)
         context = {'form': form, 'batters':batters, 'bowlers':bowlers, 'match_id':match_id, 'home_team':home_team, 'away_team':away_team}
         return render(request, 'market/dashboard.html', context)
@@ -486,11 +493,11 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
             print(dismissed_batsman)
             print(fielder)
         
-        batsman, _ = Match.objects.get_or_create(player_id=batsman)
-        nonstriker, _ = Match.objects.get_or_create(player_id=nonstriker)
-        bowler, _ = Match.objects.get_or_create(player_id=bowler)
-        fielder, _ = Match.objects.get_or_create(player_id=fielder)
-        dismissed_batsman, _ = Match.objects.get_or_create(player_id=dismissed_batsman)
+        batsman, _ = Match.objects.get_or_create(player_id=batsman,match_id=match_id)
+        nonstriker, _ = Match.objects.get_or_create(player_id=nonstriker,match_id=match_id)
+        bowler, _ = Match.objects.get_or_create(player_id=bowler,match_id=match_id)
+        fielder, _ = Match.objects.get_or_create(player_id=fielder,match_id=match_id)
+        dismissed_batsman, _ = Match.objects.get_or_create(player_id=dismissed_batsman,match_id=match_id)
         
         batsman.runs = batsman.runs + int(runs_batsman)
         if int(runs_batsman) == 4:
@@ -530,10 +537,21 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
         nonstriker.save()
         fielder.save()
         dismissed_batsman.save()
-
+        
+        #SQL code to be pasted here - pasted in scratchpad.sql in C:\Users\Pranay Karwa\Projects\WallStreet-master
+        
         context = {'form': form, 'match_id':match_id, 'home_team':home_team, 'away_team':away_team}
         #, 'batsman': batsman, 'nonstriker': nonstriker, 'bowler':bowler, 'submitbutton':submitbutton}
         return render(request, 'market/dashboard.html', context)
 
 
 # Open a connection pool and keep them open.  Whenever the db needs to be hit, you fetch a connection, do whatever you need to, and put it back in the pool.
+
+def search(request):
+    query = ''
+
+    query = request.GET['query']
+    allCompanies = Company.objects.all().filter(name__icontains=query)
+    context = {'allCompanies':allCompanies , 
+        'query':query,}
+    return render(request,'market/search.html',context)

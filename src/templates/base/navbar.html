@@ -13,97 +13,107 @@
 {% url 'market:dashboard' as dashboard_url %}
 
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #000000;">
-	<div class="container">
-		<a class="navbar-brand" href="{{ home_url }}">
-			<i class="fas fa-chart-line fa-lg" aria-hidden="true"></i>
-			Cricket Stock Market 
-		</a>
-		{% if request.user.is_authenticated %}
-			<ul class="navbar-nav ml-auto mr-3 d-lg-none">
-				<li class="nav-item {% if request.path == news_url %}active{% endif %}">
-					<a class="nav-link" href="{{ news_url }}">
-						{% if request.session.news %}
-						<span class="badge badge-success news-badge">
-							<i class="fas fa-newspaper fa-lg"></i> {{ request.session.news }}
-						</span>
-						{% else %}
-						<i class="fas fa-newspaper fa-lg"></i>
-						{% endif %}
-					</a>
-				</li>
-			</ul>
-		{% endif %}
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-		<div class="collapse navbar-collapse" id="navbarSupportedContent">
-			<ul class="navbar-nav mr-auto">
-				<li class="nav-item {% if request.path == home_url %}active{% endif %}">
-					<a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
-				</li>
-				{% if request.user.is_authenticated %}
-					<li class="nav-item {% if request.path == market_url %}active{% endif %}">
-						<a class="nav-link" href="{{ overview_url }}">Market</a>
-					</li>
-					<li class="nav-item {% if request.path == loan_url %}active{% endif %}">
-						<a class="nav-link" href="{{ loan_url }}">Bank</a>
-					</li>
-				{% endif %}
-				<li class="nav-item {% if request.path == leaderboard_url %}active{% endif %}">
-					<a class="nav-link" href="{{ leaderboard_url }}">Leaderboard</a>
-				</li>
-				{% if request.user.is_authenticated %}
-					<li class="nav-item {% if request.path == news_url %}active{% endif %} d-none d-lg-block">
-						<a class="nav-link" href="{{ news_url }}">
-							{% if request.session.news %}
-							<span class="badge badge-success news-badge">
-								<i class="fas fa-newspaper fa-lg"></i> {{ request.session.news }}
-							</span>
-							{% else %}
-							<i class="fas fa-newspaper fa-lg"></i>
-							{% endif %}
-						</a>
-					</li>
-				{% else %}
-					<li class="nav-item {% if request.path == instructions_url %}active{% endif %}">
-						<a class="nav-link" href="{{ instructions_url }}">Instructions</a>
-					</li>
-				{% endif %}
-			</ul>
-			<ul class="navbar-nav ml-auto">
-				{% if request.user.is_authenticated %}
-					<li class="nav-item {% if request.path == instructions_url %}active{% endif %}">
-						<a class="nav-link" href="{{ instructions_url }}">Instructions</a>
-					</li>
-					<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							Account
-						</a>
-						<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-							<a class="dropdown-item {% if request.path == profile_url %}active{% endif %}" href="{{ profile_url }}">Profile</a>
+    <div class="container">
+        <a class="navbar-brand" href="{{ home_url }}">
+            <i class="fas fa-chart-line fa-lg" aria-hidden="true"></i>
+            CSM
+        </a>
+        {% if request.user.is_authenticated %}
+            <ul class="navbar-nav ml-auto mr-3 d-lg-none">
+                <li class="nav-item {% if request.path == news_url %}active{% endif %}">
+                    <a class="nav-link" href="{{ news_url }}">
+                        {% if request.session.news %}
+                        <span class="badge badge-success news-badge">
+                            <i class="fas fa-newspaper fa-lg"></i> {{ request.session.news }}
+                        </span>
+                        {% else %}
+                        <i class="fas fa-newspaper fa-lg"></i>
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item {% if request.path == home_url %}active{% endif %}">
+                    <a class="nav-link" href="{{ home_url }}">Home <span class="sr-only">(current)</span></a>
+                </li>
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item {% if request.path == market_url %}active{% endif %}">
+                        <a class="nav-link" href="{{ overview_url }}">Market</a>
+                    </li>
+                    <!-- <li class="nav-item {% if request.path == loan_url %}active{% endif %}">
+                        <a class="nav-link" href="{{ loan_url }}">Bank</a>
+                    </li> -->
+                {% endif %}
+<!--                <li class="nav-item {% if request.path == leaderboard_url %}active{% endif %}">-->
+<!--                    <a class="nav-link" href="{{ leaderboard_url }}">Leaderboard</a>-->
+<!--                </li>-->
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item {% if request.path == news_url %}active{% endif %} d-none d-lg-block">
+                        <a class="nav-link" href="{{ news_url }}">
+                            {% if request.session.news %}
+                            <span class="badge badge-success news-badge">
+                                <i class="fas fa-newspaper fa-lg"></i> {{ request.session.news }}
+                            </span>
+                            {% else %}
+                            <i class="fas fa-newspaper fa-lg"></i>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                {% else %}
+                    <li class="nav-item {% if request.path == instructions_url %}active{% endif %}">
+                        <a class="nav-link" href="{{ instructions_url }}">Instructions</a>
+                    </li>
+                {% endif %}
+                <li class= mx-4 >
+                        <form method="GET" action="/market/search" class="form-inline my-2 my-lg-0">
+                            <input class="form-control mr-sm-2" type="search" name="query" id="query" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                        </form>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item {% if request.path == instructions_url %}active{% endif %}">
+                        <a class="nav-link" href="{{ instructions_url }}">Instructions</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Account
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item {% if request.path == profile_url %}active{% endif %}" href="{{ profile_url }}">Profile</a>
             <a class="dropdown-item {% if request.path == schedule_url %}active{% endif %}" href="{{ schedule_url }}">Schedules</a>
-							<div class="dropdown-divider"></div>
-							<a class="dropdown-item {% if request.path == logout_url %}active{% endif %}" href="{{ logout_url }}">Logout</a>
-						</div>
-					</li>
-					{% if request.user.is_superuser %}
-						<li class="nav-item">
-							<a class="nav-link" href="/admin/" target="blank">Admin</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item {% if request.path == logout_url %}active{% endif %}" href="{{ logout_url }}">Logout</a>
+                        </div>
+                    </li>
+                    {% if request.user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/" target="blank">Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/market/match/" target="blank">Live scoring</a>
 						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="/market/match/" target="blank">Live scoring</a>
-						</li>
-						
-					{% endif %}
-				{% else %}
-					<li class="nav-item {% if request.path == login_url %}active{% endif %}">
-						<a class="nav-link" href="{{ login_url }}">Login</a>
-					</li>
-					<li class="nav-item {% if request.path == register_url %}active{% endif %}">
-						<a class="nav-link" href="{{ register_url }}">Register</a>
-					</li>
-				{% endif %}
-			</ul>
-		</div>
-	</div>
+                        
+                    {% endif %}
+                {% else %}
+                    <li class="nav-item {% if request.path == login_url %}active{% endif %}">
+                        <a class="nav-link" href="{{ login_url }}">Login</a>
+                    </li>
+                    <li class="nav-item {% if request.path == register_url %}active{% endif %}">
+                        <a class="nav-link" href="{{ register_url }}">Register</a>
+                    </li>
+                    
+                {% endif %}
+            </ul>
+            
+        </div>
+    </div>
+    
 </nav>

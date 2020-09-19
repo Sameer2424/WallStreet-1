@@ -9,13 +9,14 @@ batting_team = ''
 bowling_team = ''
 currentmatch = CurrentMatch.objects.all()
 bowling_team_players = ''
+
 for match in currentmatch:
-    batting_team = Match.objects.all().filter(team=match.batting_team)
+    batting_team = Match.objects.all().filter(team=match.batting_team, match_id=match.match_id)
     if match.home_team == match.batting_team:
         bowling_team = match.away_team
     else:
         bowling_team = match.home_team
-    bowling_team_players = Match.objects.all().filter(team=bowling_team)
+    bowling_team_players = Match.objects.all().filter(team=bowling_team, match_id=match.match_id)
 # Options for choice fields needs to be a LIST of TUPLES
 batters = [(0,'None')]
 batters = batters + [tuple([player.player_id,player.name]) for player in batting_team ]

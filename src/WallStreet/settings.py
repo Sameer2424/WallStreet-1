@@ -107,6 +107,16 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'ebdb',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Champ2424',
+#         'HOST': 'aa1rgau2058nibn.ciqodeqxwwle.us-west-1.rds.amazonaws.com'
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
