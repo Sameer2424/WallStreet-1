@@ -500,6 +500,7 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
         dismissed_batsman, _ = Match.objects.get_or_create(player_id=dismissed_batsman,match_id=match_id)
         
         batsman.runs = batsman.runs + int(runs_batsman)
+        bowler.runs_conceded = bowler.runs_conceded + int(runs_batsman)
         if int(runs_batsman) == 4:
             batsman.fours = batsman.fours + 1
         elif int(runs_batsman) == 6:
@@ -540,6 +541,22 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
         
         #SQL code to be pasted here - pasted in scratchpad.sql in C:\Users\Pranay Karwa\Projects\WallStreet-master
         
+        conn = psycopg2.connect(database="wallstreet", user="postgres", password="admin", host="localhost", port="5432")
+        cursor = conn.cursor()
+        sql = 'call update_valuations(' + str(batsman.player_id) + ');'
+        cursor.execute(sql)
+        # sql = 'call update_valuations(' + str(nonstriker.player_id) + ');' # No need to call for nonstriker. If he is runout, it'll be taken care of with dismissed_batsman
+        # cursor.execute(sql)
+        sql = 'call update_valuations(' + str(bowler.player_id) + ');'
+        cursor.execute(sql)
+        sql = 'call update_valuations(' + str(fielder.player_id) + ');'
+        cursor.execute(sql)
+        sql = 'call update_valuations(' + str(dismissed_batsman.player_id) + ');'
+        cursor.execute(sql)
+        conn.commit()
+        cursor.close()
+        conn.close()
+
         context = {'form': form, 'match_id':match_id, 'home_team':home_team, 'away_team':away_team}
         #, 'batsman': batsman, 'nonstriker': nonstriker, 'bowler':bowler, 'submitbutton':submitbutton}
         return render(request, 'market/dashboard.html', context)
