@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.urls import reverse, reverse_lazy
 
 from .forms import LoginForm, RegisterForm, ReactivateEmailForm
-from .models import EmailActivation
+#from .models import EmailActivation
 from market.models import InvestmentRecord, TransactionScheduler, Company
 from WallStreet.mixins import (
     AnonymousRequiredMixin,
@@ -235,7 +235,7 @@ class RegisterView(AnonymousRequiredMixin, CreateView):
     def form_valid(self, form):
         super(RegisterView, self).form_valid(form)
         print(form.cleaned_data)
-        messages.success(self.request, 'Verification link sent! Please check your email.')
+        # messages.success(self.request, 'Verification link sent! Please check your email.')
         return redirect(self.success_url)
 
 
