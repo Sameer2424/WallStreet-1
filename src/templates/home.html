@@ -30,9 +30,11 @@
 
             <!--Adding a button to execute trades-->
             {% if request.user.is_superuser %}
-                <form action= 'market\executetrades'>
-                    <button type="submit" class="btn btn-success mt-3">Execute Trades</button>
-                </form>
+                <p>
+                    <form action= 'market\executetrades'>
+                        <button type="submit" class="btn btn-success mt-3">Execute Trades</button>
+                    </form>
+                </p>
                 <p>{{ executionsuccess }}</p>
                 <p>
                     <form action= 'market\innings_change'>
