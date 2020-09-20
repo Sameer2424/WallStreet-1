@@ -19,6 +19,7 @@ app_name = 'Market'
 urlpatterns = [
     #path("dashboard", views.dashboard, name = "dashboard"),
     path("executetrades", views.executetrades, name = "executetrades"),
+    path("innings_change", views.innings_change, name = "innings_change"),
     url(r'^match/', MatchCreationView.as_view(), name='match'),
     url(r'^dashboard/', DashboardView.as_view(), name='dashboard'),
     url(r'^overview/$', MarketOverview.as_view(), name='overview'),

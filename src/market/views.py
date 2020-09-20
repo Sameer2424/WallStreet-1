@@ -282,6 +282,19 @@ def executetrades(request):
     message = 'Trades successfully executed.'
     return redirect('/', {'executionsuccess':message})
 
+def innings_change(request):
+    form = ScoreCardForm(request.POST or None)
+    match, _ = CurrentMatch.objects.get_or_create()
+    first = match.batting_team
+    if first == match.home_team:
+        match.batting_team = match.away_team
+    else:
+        match.batting_team = match.home_team
+    match.save()
+    inningschangesuccess = "Innings changed successfully."
+    #, 'batsman': batsman, 'nonstriker': nonstriker, 'bowler':bowler, 'submitbutton':submitbutton}
+    return redirect('/', {'inningschangesuccess':inningschangesuccess})
+    
 '''def dashboard(request):
     form = ScoreCardForm(request.POST or None, request.FILES or None)
     if request.method == 'POST':
@@ -456,12 +469,11 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
         return render(request, 'market/dashboard.html', context)
     
     def post(self, request, *args, **kwargs):
-        current_match = CurrentMatch.objects.all()
-        for match in current_match:
-            match_id = match.match_id
-            home_team = match.home_team
-            away_team = match.away_team
-            batting_team = match.batting_team
+        match, _ = CurrentMatch.objects.get_or_create()
+        match_id = match.match_id
+        home_team = match.home_team
+        away_team = match.away_team
+        batting_team = match.batting_team
 
         form = ScoreCardForm(request.POST)
         batsman = 0
@@ -532,7 +544,7 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
             dismissed_batsman.dismissed = 1
             fielder.stumpings = fielder.stumpings + 1
             bowler.wickets = bowler.wickets + 1
-    
+
         batsman.save()
         bowler.save()
         nonstriker.save()

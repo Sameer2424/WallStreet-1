@@ -27,8 +27,6 @@ players = PlayerStats.objects.all()
 all_players = [(0,'None')]
 all_players = all_players + [tuple([player.id,player.name]) for player in players ]
 
-
-
 team_names = [('No team selected','Select team'),('Royal Challengers Bangalore', 'Royal Challengers Bangalore'),('Chennai Super Kings', 'Chennai Super Kings'),('Delhi Capitals', 'Delhi Capitals'),('Kings XI Punjab','Kings XI Punjab'),('Kolkata Knight Riders','Kolkata Knight Riders'),('Mumbai Indians','Mumbai Indians'),('Rajasthan Royals','Rajasthan Royals'),('Sunrisers Hyderabad','Sunrisers Hyderabad')]
 runs_options = [tuple([x,x]) for x in range(0,8)]
 extra_types = [(0, 'None'),(1, 'wides'),(2,'no-ball'),(3,'byes'),(4,'legbyes')]

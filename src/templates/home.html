@@ -34,6 +34,12 @@
                     <button type="submit" class="btn btn-success mt-3">Execute Trades</button>
                 </form>
                 <p>{{ executionsuccess }}</p>
+                <p>
+                    <form action= 'market\innings_change'>
+                        <button type="submit" class="btn btn-success mt-3">Innings change</button>
+                    </form>
+                    <p>{{ inningschangesuccess }}</p>
+                </p>
             {% endif %}
             
             
