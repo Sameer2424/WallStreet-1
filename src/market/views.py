@@ -241,20 +241,20 @@ class CompanyCMPChartData(APIView):
     permission_classes = []
 
     def get(self, request, format=None, *args, **kwargs):
-        '''qs = CompanyCMPRecord.objects.filter(company__code=kwargs.get('code'))
+        qs = CompanyCMPRecord.objects.filter(company__code=kwargs.get('code'))
         if qs.count() > 15:
             qs = qs[:15]
-        qs = reversed(qs)'''
+        qs = reversed(qs)
         labels = []
         cmp_data = []
-        '''for cmp_record in qs:
+        for cmp_record in qs:
             labels.append(localtime(cmp_record.timestamp).strftime('%H:%M'))
             cmp_data.append(cmp_record.cmp)
         current_cmp = Company.objects.get(code=kwargs.get('code')).cmp
         if cmp_data[-1] != current_cmp: # ???
             labels.append(timezone.make_aware(datetime.now()).strftime('%H:%M'))
             cmp_data.append(current_cmp)
-        '''
+        
         data = {
             "labels": labels,
             "cmp_data": cmp_data,
@@ -568,7 +568,7 @@ class DashboardView(LoginRequiredMixin, CountNewsMixin, View):
         conn.commit()
         cursor.close()
         conn.close()
-
+        
         context = {'form': form, 'match_id':match_id, 'home_team':home_team, 'away_team':away_team}
         #, 'batsman': batsman, 'nonstriker': nonstriker, 'bowler':bowler, 'submitbutton':submitbutton}
         return render(request, 'market/dashboard.html', context)

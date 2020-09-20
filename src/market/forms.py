@@ -18,13 +18,13 @@ for match in currentmatch:
         bowling_team = match.home_team
     bowling_team_players = Match.objects.all().filter(team=bowling_team, match_id=match.match_id)
 # Options for choice fields needs to be a LIST of TUPLES
-batters = [(0,'None')]
+batters = [(1,'None')]
 batters = batters + [tuple([player.player_id,player.name]) for player in batting_team ]
-bowlers = [(0,'None')]
+bowlers = [(1,'None')]
 bowlers = bowlers + [tuple([player.player_id,player.name]) for player in bowling_team_players ]
 
 players = PlayerStats.objects.all()
-all_players = [(0,'None')]
+all_players = [(1,'None')]
 all_players = all_players + [tuple([player.id,player.name]) for player in players ]
 
 team_names = [('No team selected','Select team'),('Royal Challengers Bangalore', 'Royal Challengers Bangalore'),('Chennai Super Kings', 'Chennai Super Kings'),('Delhi Capitals', 'Delhi Capitals'),('Kings XI Punjab','Kings XI Punjab'),('Kolkata Knight Riders','Kolkata Knight Riders'),('Mumbai Indians','Mumbai Indians'),('Rajasthan Royals','Rajasthan Royals'),('Sunrisers Hyderabad','Sunrisers Hyderabad')]
